@@ -101,6 +101,7 @@ function logger:setLogFile(newFile)
     else
         self:i("Logger changing log file")
         self.logFile = newFile
+        return true
     end
 end
 
@@ -122,6 +123,7 @@ function logger:setLogTerm(termRedirect)
     else
         self:i("Logger changing terminal")
         self.logTerm = termRedirect
+        return true
     end
 end
 

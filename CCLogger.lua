@@ -1,5 +1,8 @@
 -- a library for logging
 
+local S = require("cc.strings")
+local wrap = S.wrap
+
 --- @alias LogLevel
 --- | "debug"
 --- | "info"
@@ -35,24 +38,32 @@ local function logToFile(strIn, file)
     end
 end
 
-local function logToTerm(strIn, term)
+local function logToTerm(levelStr, msgStr, term)
     -- internal func, writes strIn to the given term if the given term is real
 
     if term ~= nil and term.write ~= nil then
-        term.write(strIn)
         local cursorX, cursorY = term.getCursorPos()
         local termX, termY = term.getSize()
-        if cursorY == termY then
-            term.scroll(1)
-            term.setCursorPos(
-                1,
-                cursorY
-            )
-        else
-            term.setCursorPos(
-                1, -- x pos
-                table.pack(term.getCursorPos())[2] + 1 -- y pos (move 1 down)
-            )
+        term.write(levelStr)
+        local lines = wrap(msgStr, termX - levelStr:len())
+        for i=1,#lines do
+            if i == 1 then
+                term.write(lines[i])
+            else
+                term.write(string.rep(" ", levelStr:len()) .. lines[i] )
+            end
+            if cursorY == termY then
+                term.scroll(1)
+                term.setCursorPos(
+                    1,
+                    cursorY
+                )
+            else
+                term.setCursorPos(
+                    1, -- x pos
+                    table.pack(term.getCursorPos())[2] + 1 -- y pos (move 1 down)
+                )
+            end
         end
         return true
     else
@@ -86,7 +97,7 @@ function logger:d(string)
             tryToSetTermColour(colours.green, self.logTerm)
         end
 
-        logToTerm("Debug: " .. string, self.logTerm)
+        logToTerm("Debug: ", string, self.logTerm)
     end
 end
 
@@ -105,7 +116,7 @@ function logger:i(string)
             tryToSetTermColour(colours.white, self.logTerm)
         end
 
-        logToTerm("Info : " .. string, self.logTerm)
+        logToTerm("Info : ", string, self.logTerm)
     end
 end
 
@@ -125,7 +136,7 @@ function logger:e(string)
             tryToSetTermColour(colours.yellow, self.logTerm)
         end
 
-        logToTerm("Error: " .. string, self.logTerm)
+        logToTerm("Error: ", string, self.logTerm)
     end
 end
 
@@ -139,7 +150,7 @@ function logger:f(string)
     end
 
     logToFile("FATAL: " .. string, self.logFile)
-    logToTerm("FATAL: " .. string, self.logTerm)
+    logToTerm("FATAL: ", string, self.logTerm)
 end
 
 --- @param level LogLevel

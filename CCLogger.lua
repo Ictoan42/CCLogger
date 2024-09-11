@@ -1,7 +1,16 @@
 -- a library for logging
 
+--- @alias LogLevel
+--- | "debug"
+--- | "info"
+--- | "error"
+--- | "fatal"
+
+--- @class Logger
 local logger = {}
 
+--- @param string string
+--- Logs a debug level message
 function logger:d(string)
     -- log a debug 
     
@@ -19,6 +28,8 @@ function logger:d(string)
     end
 end
 
+--- @param string string
+--- Logs an info level message
 function logger:i(string)
     -- log an info message
 
@@ -36,6 +47,8 @@ function logger:i(string)
     end
 end
 
+--- @param string string
+--- Logs an error level message
 function logger:e(string)
     -- log a (recoverable) error
 
@@ -54,6 +67,8 @@ function logger:e(string)
     end
 end
 
+--- @param string string
+--- Logs a fatal level message
 function logger:f(string)
     -- log a fatal error
 
@@ -65,6 +80,8 @@ function logger:f(string)
     logToTerm("FATAL: " .. string, self.logTerm)
 end
 
+--- @param level LogLevel
+--- Sets the log level for the log file
 function logger:setFileLogLevel(level)
     -- update the log level
     if isValidLogLevel(level) then
@@ -77,6 +94,8 @@ function logger:setFileLogLevel(level)
     end
 end
 
+--- @param level LogLevel
+--- Sets the log level for the terminal
 function logger:setTermLogLevel(level)
     -- update the log level
     if isValidLogLevel(level) then
@@ -89,6 +108,8 @@ function logger:setTermLogLevel(level)
     end
 end
 
+--- @param newFile string
+--- Sets the new log file
 function logger:setLogFile(newFile)
     -- change the file to log to
     -- args:
@@ -105,12 +126,15 @@ function logger:setLogFile(newFile)
     end
 end
 
+--- Disable logging to the file
 function logger:disableLogFile()
     self:i("Logger disabling log file output")
     self.logFile = nil
 end
 
-function logger:setLogTerm(termRedirect)
+--- @param newTerm table
+--- Changes the target terminal to newTerm
+function logger:setLogTerm(newTerm)
     -- change the term to log to
     -- args:
     --   - termRedirect: the term object to log to
@@ -118,15 +142,16 @@ function logger:setLogTerm(termRedirect)
     -- check that termRedirect is actually a term object
     -- do this by checking whether getSize is a thing
     print("Logger failed to apply new term: invalid term object")
-    if termRedirect.getSize == nil then
+    if newTerm.getSize == nil then
         return false
     else
         self:i("Logger changing terminal")
-        self.logTerm = termRedirect
+        self.logTerm = newTerm
         return true
     end
 end
 
+--- Disabled logging to the terminal
 function logger:disableLogTerm()
     self:i("Logger disabling terminal output")
     self.logTerm = nil
@@ -136,7 +161,14 @@ local loggerMetatable = {
     __index = logger,
 }
 
-function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
+--- @param logFile file
+--- @param logTerm term
+--- @param fileLogLevel LogLevel
+--- @param termLogLevel LogLevel
+--- @param enableColour boolean
+--- @return Logger | nil
+--- Create a new Logger
+local function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
     --[[
      args:
        
@@ -167,7 +199,7 @@ function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
             print("")
             print("Logger failed to init: invalid file object passed (remember it must be in write mode!)")
             print("")
-            return false
+            return nil
         end
     end
 
@@ -176,7 +208,7 @@ function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
         -- check it's valid
         if logTerm.getSize == nil then
             print("Logger failed to init: invalid term object passed")
-            return false
+            return nil
         end
     end
 
@@ -192,7 +224,7 @@ function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
     )
 end
 
-function isValidLogLevel(strIn)
+local function isValidLogLevel(strIn)
     -- internal func, checks whether a given string is a valid log level
     if strIn == "debug" or strIn == "info" or strIn == "error" or strIn == "fatal" then
         return true
@@ -201,7 +233,7 @@ function isValidLogLevel(strIn)
     end
 end
 
-function logToFile(strIn, file)
+local function logToFile(strIn, file)
     -- internal func, writes strIn to the given file if the given file is real
 
     if file ~= nil and file.write ~= nil then
@@ -213,13 +245,13 @@ function logToFile(strIn, file)
     end
 end
 
-function logToTerm(strIn, term)
+local function logToTerm(strIn, term)
     -- internal func, writes strIn to the given term if the given term is real
 
     if term ~= nil and term.write ~= nil then
         term.write(strIn)
-        cursorX, cursorY = term.getCursorPos()
-        termX, termY = term.getSize()
+        local cursorX, cursorY = term.getCursorPos()
+        local termX, termY = term.getSize()
         if cursorY == termY then
             term.scroll(1)
             term.setCursorPos(
@@ -238,7 +270,7 @@ function logToTerm(strIn, term)
     end
 end
 
-function tryToSetTermColour(colour, term)
+local function tryToSetTermColour(colour, term)
     -- internal func, sets the term colour to "colour" if the term exists
 
     if term ~= nil and term.write ~= nil then

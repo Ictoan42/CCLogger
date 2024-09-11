@@ -7,13 +7,75 @@
 --- | "fatal"
 
 --- @class Logger
+--- @field logFile file
+--- @field logTerm term
+--- @field fileLogLevel LogLevel
+--- @field termLogLevel LogLevel
+--- @field enableColour boolean
 local logger = {}
+
+local function isValidLogLevel(strIn)
+    -- internal func, checks whether a given string is a valid log level
+    if strIn == "debug" or strIn == "info" or strIn == "error" or strIn == "fatal" then
+        return true
+    else
+        return false
+    end
+end
+
+local function logToFile(strIn, file)
+    -- internal func, writes strIn to the given file if the given file is real
+
+    if file ~= nil and file.write ~= nil then
+        file.write(strIn.."\n")
+        file.flush()
+        return true
+    else
+        return false
+    end
+end
+
+local function logToTerm(strIn, term)
+    -- internal func, writes strIn to the given term if the given term is real
+
+    if term ~= nil and term.write ~= nil then
+        term.write(strIn)
+        local cursorX, cursorY = term.getCursorPos()
+        local termX, termY = term.getSize()
+        if cursorY == termY then
+            term.scroll(1)
+            term.setCursorPos(
+                1,
+                cursorY
+            )
+        else
+            term.setCursorPos(
+                1, -- x pos
+                table.pack(term.getCursorPos())[2] + 1 -- y pos (move 1 down)
+            )
+        end
+        return true
+    else
+        return false
+    end
+end
+
+local function tryToSetTermColour(colour, term)
+    -- internal func, sets the term colour to "colour" if the term exists
+
+    if term ~= nil and term.write ~= nil then
+        term.setTextColour(colour)
+        return true
+    else
+        return false
+    end
+end
 
 --- @param string string
 --- Logs a debug level message
 function logger:d(string)
     -- log a debug 
-    
+
     if self.fileLogLevel == "debug" then
         logToFile("Debug: " .. string, self.logFile)
     end
@@ -108,7 +170,7 @@ function logger:setTermLogLevel(level)
     end
 end
 
---- @param newFile string
+--- @param newFile file
 --- Sets the new log file
 function logger:setLogFile(newFile)
     -- change the file to log to
@@ -222,63 +284,6 @@ local function new(logFile, logTerm, fileLogLevel, termLogLevel, enableColour)
         },
         loggerMetatable
     )
-end
-
-local function isValidLogLevel(strIn)
-    -- internal func, checks whether a given string is a valid log level
-    if strIn == "debug" or strIn == "info" or strIn == "error" or strIn == "fatal" then
-        return true
-    else
-        return false
-    end
-end
-
-local function logToFile(strIn, file)
-    -- internal func, writes strIn to the given file if the given file is real
-
-    if file ~= nil and file.write ~= nil then
-        file.write(strIn.."\n")
-        file.flush()
-        return true
-    else
-        return false
-    end
-end
-
-local function logToTerm(strIn, term)
-    -- internal func, writes strIn to the given term if the given term is real
-
-    if term ~= nil and term.write ~= nil then
-        term.write(strIn)
-        local cursorX, cursorY = term.getCursorPos()
-        local termX, termY = term.getSize()
-        if cursorY == termY then
-            term.scroll(1)
-            term.setCursorPos(
-                1,
-                cursorY
-            )
-        else
-            term.setCursorPos(
-                1, -- x pos
-                table.pack(term.getCursorPos())[2] + 1 -- y pos (move 1 down)
-            )
-        end
-        return true
-    else
-        return false
-    end
-end
-
-local function tryToSetTermColour(colour, term)
-    -- internal func, sets the term colour to "colour" if the term exists
-
-    if term ~= nil and term.write ~= nil then
-        term.setTextColour(colour)
-        return true
-    else
-        return false
-    end
 end
 
 return { new = new }

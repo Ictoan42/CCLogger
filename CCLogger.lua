@@ -7,8 +7,8 @@
 --- | "fatal"
 
 --- @class Logger
---- @field logFile file
---- @field logTerm term
+--- @field logFile ccTweaked.fs.WriteHandle
+--- @field logTerm ccTweaked.term.Redirect
 --- @field fileLogLevel LogLevel
 --- @field termLogLevel LogLevel
 --- @field enableColour boolean
@@ -170,7 +170,7 @@ function logger:setTermLogLevel(level)
     end
 end
 
---- @param newFile file
+--- @param newFile ccTweaked.fs.WriteHandle
 --- Sets the new log file
 function logger:setLogFile(newFile)
     -- change the file to log to
@@ -223,8 +223,8 @@ local loggerMetatable = {
     __index = logger,
 }
 
---- @param logFile file
---- @param logTerm term
+--- @param logFile ccTweaked.fs.WriteHandle
+--- @param logTerm ccTweaked.term.Redirect
 --- @param fileLogLevel LogLevel
 --- @param termLogLevel LogLevel
 --- @param enableColour boolean

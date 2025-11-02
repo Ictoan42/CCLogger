@@ -16,7 +16,7 @@ Create the logger object:
         logTerm, -- a terminal object, as returned by term.current() or by peripheral.find("monitor")
         fileLogLevel, -- see below
         termLogLevel, -- see below
-        enableColour -- a boolean, whether to use level-dependant coloured text for logging to terminals. Default: true
+        enableColour -- a boolean, whether to use level-dependent coloured text for logging to terminals. Default: true
     )
 
 The log levels are one of these 4 strings:
@@ -136,6 +136,6 @@ Disables the log file.
 
 <br/>
 
-**Method `logger:disableLogTerm()**
+**Method `logger:disableLogTerm()`**
 
 Disable the log terminal.
